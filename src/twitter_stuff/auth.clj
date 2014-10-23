@@ -14,7 +14,7 @@
        (env-auth :consumer-key-varname :cons-key
                  :consumer-secret-varname :consumer-sec
                  :access-token-varname :acc-token
-                 :access-secret-varname :acc-secret"}
+                 :access-secret-varname :acc-secret)"}
   env-auth [& {:keys [consumer-key-varname consumer-secret-varname
                           access-token-varname access-secret-varname]
                    :or {consumer-key-varname :consumer-key
