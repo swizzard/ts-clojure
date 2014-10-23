@@ -1,14 +1,15 @@
-# witwikm
+# twitter-stuff
 
-A Clojure library designed to ... well, that part is up to you.
+Twitter processing stuff, eventually probably for my thesis.
+Right now, mostly wrappers around/adapters for various things
+including Twitter's HBC client & CMU's twitter-ark-nlp tagger.
 
 ## Usage
 
-FIXME
+Just don't yet, probably.
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Sam Raker
 
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+Distributed under the Eclipse Public License version 1.0.
