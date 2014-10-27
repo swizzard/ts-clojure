@@ -9,23 +9,24 @@
            (java.util.concurrent.LinkedBlockingQueue))
   (:require [clojure.core.match :refer [match]]
             [cheshire.core :refer [parse-string]]
-            [twitter-stuff.auth :refer env-auth]))
+            [twitter-stuff.auth :refer [env-auth]]))
 
-(def msg-queue (let [mqa (agent nil)
-                     p (proxy [java.util.concurrent.LinkedBlockingQueue] []
-                         (offer [^String string ^long timeout unit]
-                                (do
-                                  (send-off mqa conj string)
-                                  true))
-                         (take []
-                               (do
-                                 (send-off mqa rest)
-                                 (first @mqa))))]
-    p))
+
+(defn get-msg-queue [] (let [mqa (agent nil)
+                         p (proxy [java.util.concurrent.LinkedBlockingQueue] []
+                             (offer [^String string ^long timeout unit]
+                                    (do
+                                      (send-off mqa conj string)
+                                      true))
+                             (take []
+                                   (do
+                                     (send-off mqa rest)
+                                     (first @mqa))))]
+                         p))
 
 (def event-queue (java.util.concurrent.LinkedBlockingQueue. 1000))
 
-(def auth (get-auth consumer-key consumer-secret access-token access-secret))
+(def auth (env-auth))
 (defn get-endpoint [& {:keys [followings terms] :or {followings nil terms nil}}]
   (do (println followings terms)
   (if (every? nil? [followings terms])
@@ -37,17 +38,16 @@
            (fn [ep] ep)))))))
 
 
-(defn create-client [auth ep]
+(defn create-client [auth ep mq]
     (-> (ClientBuilder.)
       (.hosts Constants/STREAM_HOST)
       (.endpoint ep)
       (.authentication auth)
-      (.processor (StringDelimitedProcessor. msg-queue))
+      (.processor (StringDelimitedProcessor. mq))
       (.eventMessageQueue event-queue)
       (.build)))
 
-
-(defn get-client [] (create-client auth (get-endpoint)))
+(defn get-client [mq] (create-client auth (get-endpoint) mq))
 
 (defn connect-client [client] (.connect client))
 (defn stop-client [client] (do
@@ -68,4 +68,4 @@
 
 (def results-queue (agent nil))
 
-(defn process-tweets [] (process-stream msg-queue results-queue))
+(defn process-tweets [mq rq] (process-stream mq rq))

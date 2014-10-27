@@ -21,7 +21,8 @@
                         consumer-secret-varname :consumer-secret
                         access-token-varname :access-token
                         access-secret-varname :access-secret}}]
-  (apply get-auth (map env [consumer-key-varname
-                            consumer-secret-varname
-                            access-token-varname
-                            access-secret-varname])))
+            (com.twitter.hbc.httpclient.auth.OAuth1.
+              (env consumer-key-varname)
+              (env consumer-secret-varname)
+              (env access-token-varname)
+              (env access-secret-varname)))
