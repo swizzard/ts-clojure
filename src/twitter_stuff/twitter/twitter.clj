@@ -74,6 +74,13 @@
           (.offer results-queue
            result)))))
 
+(defn process-stream-nores 
+	([in-queue]
+		(process-stream-nores in-queue identity))
+	([in-queue process-fn]
+		(while true
+		    (process-fn (parse-string (.take in-queue) true)))))
+
 (def results-queue (agent nil))
 
 (defn process-tweets [mq rq] (process-stream mq rq))

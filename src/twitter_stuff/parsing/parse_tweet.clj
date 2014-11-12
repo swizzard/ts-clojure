@@ -27,18 +27,16 @@
   (if-let [tweet (-> t has-text
                        eng-only
                        has-tags)]
-    (prn "tweet-to-hashtags")
-    (map
-     (fn [ht] {:hashtag (:text ht) :tweet (process-tweet tweet)})
-     (get-in tweet [:entities :hashtags]))))
+    (map (fn [ht] {:hashtag (:text ht) 
+		    :tweet (process-tweet tweet)})
+          (get-in tweet [:entities :hashtags]))))
 
 (defn update-hashtags [tweet]
   (if-let [hts (tweet-to-hashtags tweet)]
-    (prn "update-hashtags")
-    (map
-     (fn [htm] {:hashtag (:hashtag htm)
-      :split-hashtag (get-best-parse (:hashtag htm))
-      :tweet (:tweet htm)})
+    (map (fn [htm] (let [hashtag (:hashtag htm)]
+                     {:hashtag hashtag
+                     :split-hashtag (get-best-parse hashtag)
+		     :tweet (:tweet htm)}))
      hts)))
 
 (defn tweet-to-db [db t]
