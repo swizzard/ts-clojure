@@ -17,11 +17,12 @@
            [false false] [old new])))
 
 (defn conj-doc [db id k addition]
-  (if-let [updated
-           (update-in (clutch/get-document db id)
-                      [k] multi-update addition)]
-      (clutch/put-document db (assoc updated :_id id))
-      (clutch/put-document db (assoc {:_id id} k addition))))
+  (do (prn "conj-doc")
+    (if-let [updated
+             (update-in (clutch/get-document db id)
+                        [k] multi-update addition)]
+        (clutch/put-document db (assoc updated :_id id))
+        (clutch/put-document db (assoc {:_id id} k addition)))))
 
 (defn assoc-doc [db id m]
     (clutch/put-document db
