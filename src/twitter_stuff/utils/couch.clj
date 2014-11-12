@@ -29,5 +29,4 @@
 
 (defn hashtags-to-db [db hashtags]
   (doseq [hashtag hashtags] 
-    (conj-doc db (:hashtag hashtag) :tweets (:tweet hashtag))
-    hashtag))
+    (conj-doc db (:hashtag hashtag) :tweets (:tweet hashtag))))
