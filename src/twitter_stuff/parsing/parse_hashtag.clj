@@ -3,6 +3,8 @@
             [cheshire.core :refer [parse-stream]]
             [clojure.java.io :as io]))
 
+(def bests (atom {}))
+
 (def word-freqs (parse-stream
                  (io/reader "resources/lowered_freqs.json")))
 
@@ -22,8 +24,10 @@
    ss]))
 
 (defn get-best-parse [s]
-  (last (apply sorted-map
-               (reduce concat
+  (if-let [curr-best (get bests s)]
+    curr-best
+    ([let best (last (apply sorted-map
+                   (reduce concat
                        (pmap rank-freqs
-                             (get-subwords s))))))
-
+                             (get-subwords s)))))]
+        (swap! bests assoc s best))))

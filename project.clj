@@ -20,4 +20,4 @@
   :plugins [[lein-gorilla "0.3.3"]
             [lein-environ "1.0.0"]
             [lein-pprint "1.1.1"]]
-  :jvm-opts ["-Xmx4g"])
+  :jvm-opts ["-Xmx12g"])
