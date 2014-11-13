@@ -14,9 +14,12 @@
      :year (.get (.year dobj))}))
 
 (defn expand-url [u]
-  (if u
-  (let [resolved (last (:trace-redirects (client/get u
-                               {:throw-exceptions false})))]
+    (if u
+      (let [resolved (last (:trace-redirects (try
+     					       (client/get u
+                                                 {:throw-exceptions false})
+				               (catch Exception e
+					     nil))))]
   (try (url resolved)
        (catch Exception e resolved)))))
 

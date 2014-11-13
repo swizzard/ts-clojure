@@ -19,14 +19,13 @@
 
 (def auth (env-auth))
 (defn get-endpoint [& {:keys [followings terms] :or {followings nil terms nil}}]
-  (do (println followings terms)
   (if (every? nil? [followings terms])
     (StatusesSampleEndpoint.)
     (-> (StatusesFilterEndpoint.)
         ((if (seq followings) (fn [ep] (.followings ep followings))
            (fn [ep] ep)))
         ((if (seq terms) (fn [ep] (.trackTerms ep terms))
-           (fn [ep] ep)))))))
+           (fn [ep] ep))))))
 
 
 (defn create-client [auth ep mq]
@@ -78,8 +77,9 @@
 	([in-queue]
 		(process-stream-nores in-queue identity))
 	([in-queue process-fn]
-		(while true
-		    (process-fn (parse-string (.take in-queue) true)))))
+		(loop [res (.take in-queue)]
+		    (process-fn (parse-string res true))
+		    (recur (.take in-queue)))))
 
 (def results-queue (agent nil))
 

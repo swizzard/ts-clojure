@@ -12,18 +12,18 @@
                      "<S> = W+
                      W = #'\\w'+"))
 
-(defn get-subwords [s] (pmap
-                        #(pmap (fn [p] (apply str (rest p))) %)
-                          (insta/parses subword-parser s)))
+(defn get-subwords [s] (doseq [parses (insta/parses subword-parser s)]
+                        (map (fn [p] (apply str (rest p))) parses)))
+
 
 (defn rank-freqs [ss]
-  (let [freqs (pmap #(* (get word-freqs % oov) (count %)) ss)]
+  (let [freqs (map #(* (get word-freqs % oov) (count %)) ss)]
   [(Math/pow (apply * freqs) (/ (count ss)))
    ss]))
 
 (defn get-best-parse [s]
   (last (apply sorted-map
                (reduce concat
-                       (pmap rank-freqs
+                       (map rank-freqs
                              (get-subwords s))))))
 
