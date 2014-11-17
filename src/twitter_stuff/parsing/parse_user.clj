@@ -1,5 +1,9 @@
 (ns twitter-stuff.parsing.parse-user
-  (:require [twitter-stuff.parsing.parse-etc :refer [get-expanded-urls]]))
+  (:require [twitter-stuff.parsing.parse-etc :refer [get-expanded-urls]]
+   	    (clj-time format predicates)
+	    [twitter-stuff.parsing.parse-etc :refer [caf]]))
+(defn process-created-at [ca-date]
+	(let [dobj (clj-time.format/parse caf ca-date]	
 
 (defn process-user [m]
   (-> m

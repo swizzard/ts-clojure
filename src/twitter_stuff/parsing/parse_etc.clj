@@ -6,8 +6,7 @@
 (def caf (clj-time.format/formatter "E MMMM dd HH:mm:ss Z yyyy"))
 
 (defn get-date-info [date-str]
-  (let [caf (clj-time.format/formatter "E MMMM dd HH:mm:ss Z yyyy")
-        dobj (clj-time.format/parse caf date-str)]
+  (let [dobj (clj-time.format/parse caf date-str)]
     {:is-weekday (clj-time.predicates/weekday? dobj)
      :day-of-week (.get (.dayOfWeek dobj))
      :day-of-month (.get (.dayOfMonth dobj))
