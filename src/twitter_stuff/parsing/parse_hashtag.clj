@@ -5,11 +5,7 @@
 
 (def bests (atom {}))
 
-(def word-freqs (let [m1 (parse-stream (io/reader "resources/lowered_freqs.json"))
-		      m2 (parse-stream (io/reader "resources/freqs_invokeit.json"))]
-		  (apply merge (map #(apply hash-map %) (map (fn [k] [k (/ (+ (get m1 k 0) (get m2 k 0)) 2)]) (distinct (concat (keys m1) (keys m2))))))))
-
-(def oov (/ (count word-freqs)))
+(def word-freqs (parse-stream (io/reader "resources/freqs_combined.json")))
 
 (def subword-parser (insta/parser
                      "<S> = W+
@@ -25,10 +21,10 @@
   [(Math/pow (apply * freqs) (/ (count ss)))
    ss]))
 
-(defn get-score-arith [parse-str] 
-	(long (/ (apply + (map #(get word-freqs % 0) parse-str)) (count parse-str))))
 (defn get-score [parse-str]
-	(let [freqs (map #(* (get word-freqs % oov) (/ (count parse-str))) parse-str)]
+	(let [freqs (map #(* (get word-freqs % oov) 
+		             (/ (count parse-str))) 
+			parse-str)]
 		(Math/pow (apply * freqs) (/ (count parse-str)))))
 
 (defn get-best-parse [s]
