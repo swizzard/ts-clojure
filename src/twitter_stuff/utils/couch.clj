@@ -5,7 +5,7 @@
             [clojure.core.match :refer [match]]))
 
 
-(def db (clutch/get-database "twitter"))
+(def db (clutch/get-database "http://24.186.113.22:5984/twitter"))
 
 (defn multi-update [old new]
   (if (nil? old)
