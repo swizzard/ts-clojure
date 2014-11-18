@@ -22,16 +22,22 @@
   (try (url resolved)
        (catch Exception e resolved)))))
 
-(defn get-expanded-urls [urls]
-  {:parsed-urls
-   (if urls
-     (mapv (fn [url-entity] (if-let [expanded (expand-url
-                                            (:expanded_url url-entity))]
-            {:url (:display_url url-entity)
-             :expanded-url (str expanded)
-             :domain (or (:host expanded)
-                          (last
-                           (re-find #"https?://(?:www.)?([\w\.]+)"
-                                    expanded)))}))
-          urls)
-     nil)})
+(def host-pat #"https://(?:www.)?([\w\.]+)")
+
+(defn get-expanded-url [entity-or-url]
+	(if (map? entity-or-url)
+		(let [expanded (expand-url (:expanded_url entity-or-url))]
+			{:url (:display_url entity-or-url)
+			 :expanded_url (str expanded)
+			 :host (or (:host expanded)
+				   (last (re-find host-pat url)))})
+		(let [expanded (expand-url entity-or-url)]
+			{:url entity-or-url
+			 :expanded_url (str expanded)
+			 :host (or (:host expanded)
+				   (last (re-find host-pat entity-or-url)))})))
+
+(defn get-expanded-urls [url-or-urls]
+	(if ((every-pred coll? (complement map?)) url-or-urls) 
+				(map get-expanded-url url-or-urls)
+			 	(get-expanded-url url-or-urls)))
