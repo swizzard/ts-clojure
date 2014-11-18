@@ -17,17 +17,16 @@
            [false false] [old new])))
 
 (defn conj-doc [db id k addition]
-  (do (prn "conj-doc")
     (if-let [updated
              (update-in (clutch/get-document db id)
                         [k] multi-update addition)]
         (clutch/put-document db (assoc updated :_id id))
-        (clutch/put-document db (assoc {:_id id} k addition)))))
+        (clutch/put-document db (assoc {:_id id} k addition))))
 
 (defn assoc-doc [db id m]
     (clutch/put-document db
      (merge (clutch/get-document db id) m)))
 
 (defn hashtags-to-db [db hashtags]
-  (doseq [hashtag hashtags] 
-    (conj-doc db (:hashtag hashtag) :tweets (:tweet hashtag))))
+      (doseq [hashtag hashtags] 
+   	 (conj-doc db (:hashtag hashtag) :tweets (:tweet hashtag))))

@@ -3,7 +3,7 @@
 
 (defn process-user [m]
   (-> m
-      (merge (get-expanded-urls (:url m)))
+      (assoc :expanded_urls (get-expanded-urls (:url m)))
       (assoc :follow-ratio
          (/ (double (:followers_count m))
             (:friends_count m)))

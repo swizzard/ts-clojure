@@ -10,10 +10,13 @@
 
 (def client (twitter/create-client twitter/auth (twitter/get-endpoint) mq))
 
-(defn process [& {:keys [use-agent] :or {use-agent false}}]
+(defn process [& {:keys [use-agent nores] :or {use-agent false
+					       nores false}}]
   (if use-agent
    (twitter/process-stream mq rqa (partial pt/tweet-to-db db))
-   (twitter/process-stream-lbq mq rq (partial pt/tweet-to-db db))))
+   (if nores
+	(twitter/process-stream-nores mq (partial pt/tweet-to-db db))
+   (twitter/process-stream-lbq mq rq (partial pt/tweet-to-db db)))))
 
 (def t (Thread. #(process :use-agent true)))
 
