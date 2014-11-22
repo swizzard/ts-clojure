@@ -30,12 +30,12 @@
 			{:url (:display_url entity-or-url)
 			 :expanded_url (str expanded)
 			 :host (or (:host expanded)
-				   (last (re-find host-pat url)))})
+				   (last (re-find #"https?://(?:www.)?([\w\.]+)" (str entity-or-url))))})
 		(let [expanded (expand-url entity-or-url)]
 			{:url entity-or-url
 			 :expanded_url (str expanded)
 			 :host (or (:host expanded)
-				   (last (re-find host-pat entity-or-url)))})))
+				   (last (re-find #"https?://(?:www.)?([\w\.]+)" (str entity-or-url))))})))
 
 (defn get-expanded-urls [url-or-urls]
 	(if ((every-pred coll? (complement map?)) url-or-urls) 

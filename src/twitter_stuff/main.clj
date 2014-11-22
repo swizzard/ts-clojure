@@ -1,7 +1,7 @@
 (ns twitter-stuff.main
   (:require [twitter-stuff.twitter.twitter :as twitter]
             [twitter-stuff.parsing.parse-tweet :as pt]
-            [twitter-stuff.utils.couch :refer [db]])
+            [twitter-stuff.utils.couch :refer [get-db]])
   (:import [java.util.concurrent.LinkedBlockingQueue]))
 
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
@@ -12,13 +12,14 @@
 
 (defn process [& {:keys [use-agent nores] :or {use-agent false
 					       nores false}}]
+  (let [db (get-db)]
   (if use-agent
    (twitter/process-stream mq rqa (partial pt/tweet-to-db db))
    (if nores
 	(twitter/process-stream-nores mq (partial pt/tweet-to-db db))
-   (twitter/process-stream-lbq mq rq (partial pt/tweet-to-db db)))))
+   (twitter/process-stream-lbq mq rq (partial pt/tweet-to-db db))))))
 
-(def t (Thread. #(process :use-agent true)))
+(def t (Thread. #(process :nores true)))
 
 (defn run [t] (do
               (.connect client)
@@ -26,3 +27,5 @@
                 t))
 
 (defn stop [t] (twitter/stop-client client t))
+
+(defn -main [] (run t))

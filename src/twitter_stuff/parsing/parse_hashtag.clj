@@ -6,7 +6,7 @@
 (def bests (atom {}))
 
 (def word-freqs (parse-stream (io/reader "resources/freqs_combined.json")))
-
+(def oov (long (/ (count word-freqs))))
 (def subword-parser (insta/parser
                      "<S> = W+
                      W = #'\\w'+"))

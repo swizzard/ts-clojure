@@ -16,8 +16,8 @@
 
 (defn process-tweet [t]
   (-> t
-      (merge (get-expanded-urls
-              (get-in t [:entities :urls])))
+      (assoc :expanded_urls
+	     (get-expanded-urls (get-in t [:entities :urls])))
       (merge (parse-tweet-text (:text t)))
       (merge (get-date-info (:created_at t)))
       (update-in [:user] process-user)
