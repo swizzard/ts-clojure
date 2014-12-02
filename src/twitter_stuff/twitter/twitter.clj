@@ -51,7 +51,7 @@
 
 (defn process-stream
           ([in-queue]
-                           (process-stream-nores in-queue identity))
+                           (process-stream in-queue identity))
           ([in-queue process-fn]
                            (loop [res (.take in-queue)]
                                                  (process-fn (parse-string res true))
