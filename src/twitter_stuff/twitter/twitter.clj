@@ -18,6 +18,7 @@
 
 
 (def auth (env-auth))
+
 (defn get-endpoint [& {:keys [followings terms] :or {followings nil terms nil}}]
   (if (every? nil? [followings terms])
     (StatusesSampleEndpoint.)
@@ -47,40 +48,5 @@
    (do
      (.stop client)
      (.stop processor-thread))))
-
-(defn process-stream [^java.util.concurrent.LinkedBlockingQueue in-queue
-                      results-queue & [process-fn]]
-  (let [to-map (fn [q] (parse-string (.take q) true))
-        process (if process-fn
-                  (comp process-fn to-map)
-                  to-map)]
-    (while true
-      (if-let [result (process in-queue)]
-          (send-off
-           results-queue
-           conj
-           result)))))
-
-(defn process-stream-lbq [^java.util.concurrent.LinkedBlockingQueue in-queue
-                          ^java.util.concurrent.LinkedBlockingQueue results-queue
-                          & [process-fn]]
-    (let [to-map (fn [q] (parse-string (.take q) true))
-        process (if process-fn
-                  (comp process-fn to-map)
-                  to-map)]
-    (while true
-      (if-let [result (process in-queue)]
-          (.offer results-queue
-           result)))))
-
-(defn process-stream-nores 
-	([in-queue]
-		(process-stream-nores in-queue identity))
-	([in-queue process-fn]
-		(loop [res (.take in-queue)]
-		    (process-fn (parse-string res true))
-		    (recur (.take in-queue)))))
-
-(def results-queue (agent nil))
 
 (defn process-tweets [mq rq] (process-stream mq rq))

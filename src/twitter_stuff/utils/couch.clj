@@ -1,8 +1,7 @@
 (ns twitter-stuff.utils.couch
   (:require [com.ashafa.clutch :as clutch]
             [cemerick.url]
-            [environ.core :refer [env]]
-            [clojure.core.match :refer [match]]))
+            [environ.core :refer [env]]))
 
 
 (defn get-db [] (clutch/get-database (assoc (cemerick.url/url "http://127.0.0.1/"
@@ -13,12 +12,10 @@
 
 (defn multi-update [old new]
   (if (nil? old)
-    new
-    (match [(sequential? old) (sequential? new)]
-           [true true] (into old new)
-           [true false] (conj old new)
-           [false true] (into (vector old) new)
-           [false false] [old new])))
+    [new]
+    (if (sequential? new)
+      (into old new)
+      (conj old new))))
 
 (defn conj-doc [db id k addition]
     (if-let [updated
@@ -33,4 +30,6 @@
 
 (defn hashtags-to-db [db hashtags]
       (doseq [hashtag hashtags] 
-   	 (conj-doc db (:hashtag hashtag) :tweets (:tweet hashtag))))
+        (let [doc (or (clutch/get-document db hashtag) {:_id (:hashtag hashtag) :tweets []})]
+          (update-in doc [:tweets] conj (:tweet hashtag)))))
+

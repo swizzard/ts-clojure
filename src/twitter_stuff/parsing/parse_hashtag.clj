@@ -11,7 +11,7 @@
                      "<S> = W+
                      W = #'\\w'+"))
 
-(defn get-subwords [s] (map (fn [p] (apply str (rest p))) (insta/parses subword-parses s)))
+(defn get-subwords [s] (map (fn [p] (apply str (rest p))) (insta/parses subword-parser s)))
 
 (defn get-score [parse-str]
 	(let [freqs (map #(* (get word-freqs % oov) 

@@ -31,14 +31,6 @@
 		    :tweet (process-tweet tweet)})
           (get-in tweet [:entities :hashtags]))))
 
-(defn update-hashtags [tweet]
-  (if-let [hts (tweet-to-hashtags tweet)]
-    (map (fn [htm] (let [hashtag (:hashtag htm)]
-                     {:hashtag hashtag
-                     :split-hashtag (get-best-parse hashtag)
-		     :tweet (:tweet htm)}))
-     hts)))
-
 (defn tweet-to-db [db t]
-  (hashtags-to-db db (update-hashtags t)))
+  (hashtags-to-db db (tweet-to-hashtags t)))
 
