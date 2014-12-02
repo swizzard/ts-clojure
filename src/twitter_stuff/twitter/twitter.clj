@@ -49,4 +49,12 @@
      (.stop client)
      (.stop processor-thread))))
 
+(defn process-stream
+          ([in-queue]
+                           (process-stream-nores in-queue identity))
+          ([in-queue process-fn]
+                           (loop [res (.take in-queue)]
+                                                 (process-fn (parse-string res true))
+                                                 (recur (.take in-queue)))))
+
 (defn process-tweets [mq rq] (process-stream mq rq))
