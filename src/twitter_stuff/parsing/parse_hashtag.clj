@@ -11,14 +11,24 @@
                      "<S> = W+
                      W = #'\\w'+"))
 
-(defn get-subwords [s] (map (fn [p] (apply str (rest p))) (insta/parses subword-parser s)))
+(defn get-subwords [s] (map #(map (fn [p] (apply str (rest p))) %)
+			    (insta/parses subword-parser s :optimize :memory)))
 
 (defn get-score [parse-str]
-	(let [freqs (map #(* (get word-freqs % oov) 
-		             (/ (count parse-str))) 
+	(when (< 0 (count parse-str))
+	(with-precision 10
+	(let [freqs (map #(Math/pow (get word-freqs % oov) 
+		             (/ (count %)))
 			parse-str)]
-		(Math/pow (apply * freqs) (/ (count parse-str)))))
+		(Math/pow (apply * freqs) (/ (count parse-str)))))))
 
+(defn get-best-parse-map [s]
+   (if-let [curr-best (get @bests s)]
+	(first curr-best)
+        (apply (partial max-key :score) 
+		(map (fn [sw] {:parse sw :score (get-score sw)}) 
+					(get-subwords s)))))
+	
 (defn get-best-parse [s]
   (if-let [curr-best (get @bests s)]
     (first curr-best)

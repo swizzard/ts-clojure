@@ -12,7 +12,8 @@
                                     [get-expanded-urls
                                      get-date-info]]
                                    [parse-user :refer
-                                    [process-user]])))
+                                    [process-user]])
+	    [clojure.string :refer [replace]]))
 
 (defn process-tweet [t]
   (-> t
@@ -27,7 +28,7 @@
   (if-let [tweet (-> t has-text
                        eng-only
                        has-tags)]
-    (map (fn [ht] {:hashtag (:text ht) 
+    (map (fn [ht] {:hashtag (replace (:text ht) #"\A_|_\z" "\\\\_")
 		    :tweet (process-tweet tweet)})
           (get-in tweet [:entities :hashtags]))))
 
