@@ -24,10 +24,12 @@
 
 (defn get-best-parse-map [s]
    (if-let [curr-best (get @bests s)]
-	(first curr-best)
-        (apply (partial max-key :score) 
-		(map (fn [sw] {:parse sw :score (get-score sw)}) 
-					(get-subwords s)))))
+	curr-best
+	(get (swap! bests assoc s (:parse (apply (partial max-key :score)
+						(map (fn [sw]
+							{:parse sw :score 
+							 (get-score sw)}) 
+						(get-subwords s))))) s)))
 	
 (defn get-best-parse [s]
   (if-let [curr-best (get @bests s)]
