@@ -5,7 +5,8 @@
                                             eng-only
                                             has-text
                                             has-tags]]
-                           [couch :refer [hashtags-to-db]])
+                           [couch :refer [hashtags-to-db]]
+			   [mongo :refer [hashtags-to-mongo]])
             (twitter-stuff.parsing [parse-hashtag :refer
                                     [get-best-parse]]
                                    [parse-etc :refer
@@ -35,3 +36,5 @@
 (defn tweet-to-db [db t]
   (hashtags-to-db db (tweet-to-hashtags t)))
 
+(defn tweet-to-mongo [t]
+	(hashtags-to-mongo (tweet-to-hashtags t)))

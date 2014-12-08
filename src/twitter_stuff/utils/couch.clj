@@ -22,8 +22,11 @@
 
 (defn hashtags-to-db [db hashtags]
       (doseq [hashtag hashtags] 
-        (let [doc (or (clutch/get-document db (:hashtag hashtag)) {:_id (:hashtag hashtag) :tweets []})]
-          (clutch/put-document db (update-in doc [:tweets] conj (:tweet hashtag))))))
+        (let [new-tweet (:tweet hashtag) ht (:hashtag hashtag) 
+	      updated (if-let [doc (clutch/get-document db ht)] 
+		(update-in doc [:tweets] conj new-tweet) 
+		{:_id ht :tweets [new-tweet]})]
+          (clutch/put-document db updated))))
 
 
 (defn get-all-docs [db & {:keys [with-docs]}]

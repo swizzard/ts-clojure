@@ -13,7 +13,11 @@
 (defn process [] (let [db (get-db)]
                    (twitter/process-stream mq (partial pt/tweet-to-db db))))
 
+(defn process-mongo [] (twitter/process-stream mq (partial pt/tweet-to-mongo)))
+
 (def t (Thread. #(process)))
+
+(def m-t (Thread. #(process-mongo)))
 
 (defn run [t] (do
               (.connect client)
