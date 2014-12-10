@@ -29,6 +29,8 @@
 (defn get-all-docs [db & {:keys [with-docs]}]
 	(clutch/all-documents db {:include_documents (or with-docs false)}))
 
+(defn count-tweets [] (reduce + (map #(-> % (get-in [:doc :tweets]) count) (clutch/all-documents (get-db) {:include_docs true}))))
+
 (defn co-ocs [db ht & [s]] 
 	(reduce into (or s #{}) 
 		(map #(map :text %) 
