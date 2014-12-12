@@ -5,8 +5,8 @@
 
 (defn get-db [] (clutch/get-database (assoc (cemerick.url/url "http://127.0.0.1/"
 						 "twitter")
-					:port 5984
-					:username "swizzard"
+					:port (env :couchdb-port)
+					:username (env :couchdb-username)
 					:password (env :couchdb-admin-pword))))
 
 (defn multi-update [old new]

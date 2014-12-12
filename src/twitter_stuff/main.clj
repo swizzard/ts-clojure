@@ -1,7 +1,9 @@
 (ns twitter-stuff.main
   (:require [twitter-stuff.twitter.twitter :as twitter]
             [twitter-stuff.parsing.parse-tweet :as pt]
-            [twitter-stuff.utils.couch :refer [get-db]])
+            [twitter-stuff.utils.couch :as couch]
+            [com.ashafa.clutch :as clutch]
+            [environ.core :refer [env]])
   (:import [java.util.concurrent.LinkedBlockingQueue]))
 
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
@@ -10,7 +12,7 @@
 
 (def client (twitter/create-client twitter/auth (twitter/get-endpoint) mq))
 
-(defn process [] (let [db (get-db)]
+(defn process [] (let [db (couch/get-db)]
                    (twitter/process-stream mq (partial pt/tweet-to-db db))))
 
 (def t (Thread. #(process)))
