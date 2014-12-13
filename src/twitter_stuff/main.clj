@@ -18,14 +18,18 @@
 (def processor (Thread. #(process)))
 (def uploader (Thread. #(upload)))
 
+(defn start-all [threads]
+	(doseq [t threads]
+		(.start t)))
+
 (defn run [num-proc num-up]
            (let [threads (get-threads num-proc num-up)
                  client (get-client mq)]
              (do
                 (.connect client)
-                (doall (map #(.start %) (:process threads)))
+		(start-all (:process threads))
                 (Thread/sleep 1000)
-                (doall (map #(.start %) (:upload threads)))
+		(start-all (:upload threads))
                 {:client client :threads threads})))
 
 (defn stop [m] (let [threads (:threads m)] 
