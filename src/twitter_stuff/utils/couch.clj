@@ -3,8 +3,8 @@
             [cemerick.url]
             [environ.core :refer [env]]))
 
-(defn get-db [] (clutch/get-database (assoc (cemerick.url/url "http://127.0.0.1/"
-						 "twitter")
+(defn get-db [& [db-url db-name]] (clutch/get-database (assoc (cemerick.url/url (or db-url "http://127.0.0.1")
+						 (or db-name "twitter"))
 					:port (env :couchdb-port)
 					:username (env :couchdb-username)
 					:password (env :couchdb-admin-pword))))
@@ -29,7 +29,9 @@
 (defn get-all-docs [db & {:keys [with-docs]}]
 	(clutch/all-documents db {:include_documents (or with-docs false)}))
 
-(defn count-tweets [] (reduce + (map #(-> % (get-in [:doc :tweets]) count) (clutch/all-documents (get-db) {:include_docs true}))))
+(defn count-tweets [& [db-url db-name]] (reduce + (map #(-> % (get-in [:doc :tweets]) count) (clutch/all-documents (get-db (or db-url "127.0.0.1")
+                                                                                                                           (or db-name "twitter")) 
+                                                                                                                   {:include_docs true}))))
 
 (defn co-ocs [db ht & [s]] 
 	(reduce into (or s #{}) 
