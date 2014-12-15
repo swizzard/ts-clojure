@@ -3,6 +3,9 @@
             [twitter-stuff.parsing.parse-tweet :as pt]
             [twitter-stuff.utils.couch :refer [get-db hashtag-to-db]]
             [twitter-stuff.utils.helpers :refer [from-q q-to-q]])
+            [twitter-stuff.utils.couch :as couch]
+            [com.ashafa.clutch :as clutch]
+            [environ.core :refer [env]])
   (:import [java.util.concurrent.LinkedBlockingQueue]))
 
 (def db (get-db))
