@@ -37,3 +37,7 @@
 (defn has-text [m] (screen-map m :text))
 
 (defn has-tags [m] (screen-map m [:entities :hashtags]))
+
+(defn map-by [f coll] (reduce (partial apply assoc) {} (map f coll)))
+
+(defn sort-docs-by-tag [docs] (map-by (fn [ht] [(:key ht) (get-in ht [:doc :tweets])]) docs))
