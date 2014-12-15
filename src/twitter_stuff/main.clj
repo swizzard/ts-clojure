@@ -20,7 +20,9 @@
 
 (defn start-all [threads]
 	(doseq [t threads]
-		(.start t)))
+		(try
+			(.start t)
+		(catch Exception e))))
 
 (defn run [num-proc num-up]
            (let [threads (get-threads num-proc num-up)
@@ -38,4 +40,4 @@
                   (map #(.stop %) (:process threads))
                   (map #(.stop %) (:upload threads)))))
 
-(defn -main [] (run 2 5))
+(defn -main [] (run 6 6))
