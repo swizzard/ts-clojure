@@ -8,8 +8,8 @@
 					:port (env :couchdb-port)
 					:username (env :couchdb-username)
 					:password (env :couchdb-admin-pword)
-                    :socket-timeout 10000
-                    :conn-timeout 10000)))
+                    :socket-timeout 200000
+                    :conn-timeout 20000)))
 
 (defn multi-update [old new]
   (if (nil? old)
