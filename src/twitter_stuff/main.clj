@@ -3,7 +3,8 @@
             [twitter-stuff.parsing.parse-tweet :as pt]
             [twitter-stuff.utils.couch :refer [get-db]] 
             [twitter-stuff.utils.helpers :refer [from-q q-to-q]]
-            [com.ashafa.clutch :as clutch]))
+            [com.ashafa.clutch :as clutch]
+            [environ.core :refer [env]]))
 
 (def db (get-db))
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
@@ -18,14 +19,20 @@
 (def processor (Thread. #(process)))
 (def uploader (Thread. #(upload)))
 
+(defn start-all [threads]
+	(doseq [t threads]
+		(try
+			(.start t)
+		(catch Exception e))))
+
 (defn run [num-proc num-up]
            (let [threads (get-threads num-proc num-up)
                  client (get-client mq)]
              (do
                 (.connect client)
-                (doall (map #(.start %) (:process threads)))
+		(start-all (:process threads))
                 (Thread/sleep 1000)
-                (doall (map #(.start %) (:upload threads)))
+		(start-all (:upload threads))
                 {:client client :threads threads})))
 
 (defn stop [m] (let [threads (:threads m)] 
@@ -34,4 +41,4 @@
                   (map #(.stop %) (:process threads))
                   (map #(.stop %) (:upload threads)))))
 
-(defn -main [] (run 2 5))
+(defn -main [] (run 6 6))

@@ -50,3 +50,7 @@
 
 (defn q-to-q [process-fn in-q out-q]
     (from-q (to-q process-fn out-q) in-q))
+
+(defn map-by [f coll] (reduce (partial apply assoc) {} (map f coll)))
+
+(defn sort-docs-by-tag [docs] (map-by (fn [ht] [(:key ht) (get-in ht [:doc :tweets])]) docs))
