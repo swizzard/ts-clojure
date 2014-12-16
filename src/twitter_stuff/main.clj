@@ -1,17 +1,17 @@
 (ns twitter-stuff.main
   (:require [twitter-stuff.twitter.twitter :refer [get-client]]
             [twitter-stuff.parsing.parse-tweet :as pt]
-            [twitter-stuff.utils.couch :refer [get-db hashtag-to-db]]
-            [twitter-stuff.utils.helpers :refer [from-q q-to-q]])
-  (:import [java.util.concurrent.LinkedBlockingQueue]))
+            [twitter-stuff.utils.couch :refer [get-db]] 
+            [twitter-stuff.utils.helpers :refer [from-q q-to-q]]
+            [com.ashafa.clutch :as clutch]))
 
 (def db (get-db))
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
 (def rq (java.util.concurrent.LinkedBlockingQueue.))
 
 
-(defn process [] (q-to-q pt/tweet-to-hashtags mq rq))
-(defn upload [] (from-q #(hashtag-to-db db %) rq))
+(defn process [] (q-to-q pt/process-tweet mq rq))
+(defn upload [] (from-q #(clutch/put-document db %) rq))
 
 (defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. #(process)))
                                      :upload (repeat num-up (Thread. #(upload)))})
