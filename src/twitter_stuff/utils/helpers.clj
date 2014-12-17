@@ -46,7 +46,9 @@
       (recur (.take q))))
 
 (defn to-q [process-fn q]
-    (comp #(doseq [res %] (.offer q res)) process-fn))
+    (fn [input]
+      (if-let [res (process-fn input)]
+        (.offer q res))))
 
 (defn q-to-q [process-fn in-q out-q]
     (from-q (to-q process-fn out-q) in-q))

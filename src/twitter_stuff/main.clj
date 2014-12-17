@@ -6,7 +6,7 @@
             [com.ashafa.clutch :as clutch]
             [environ.core :refer [env]]))
 
-(def db (get-db))
+(def db (get-db "http://127.0.0.1" "twitter-new"))
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
 (def rq (java.util.concurrent.LinkedBlockingQueue.))
 
@@ -14,8 +14,8 @@
 (defn process [] (q-to-q pt/process-tweet mq rq))
 (defn upload [] (from-q #(clutch/put-document db %) rq))
 
-(defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. #(process)))
-                                     :upload (repeat num-up (Thread. #(upload)))})
+(defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. process))
+                                     :upload (repeat num-up (Thread. upload))})
 (def processor (Thread. #(process)))
 (def uploader (Thread. #(upload)))
 
