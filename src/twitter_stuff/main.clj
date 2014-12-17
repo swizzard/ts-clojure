@@ -1,27 +1,44 @@
 (ns twitter-stuff.main
-  (:require [twitter-stuff.twitter.twitter :as twitter]
+  (:require [twitter-stuff.twitter.twitter :refer [get-client]]
             [twitter-stuff.parsing.parse-tweet :as pt]
-            [twitter-stuff.utils.couch :as couch]
+            [twitter-stuff.utils.couch :refer [get-db]] 
+            [twitter-stuff.utils.helpers :refer [from-q q-to-q]]
             [com.ashafa.clutch :as clutch]
-            [environ.core :refer [env]])
-  (:import [java.util.concurrent.LinkedBlockingQueue]))
+            [environ.core :refer [env]]))
 
+(def db (get-db "http://127.0.0.1" "twitter-new"))
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
 (def rq (java.util.concurrent.LinkedBlockingQueue.))
-(def rqa (agent nil))
 
-(def client (twitter/create-client twitter/auth (twitter/get-endpoint) mq))
 
-(defn process [] (let [db (couch/get-db)]
-                   (twitter/process-stream mq (partial pt/tweet-to-db db))))
+(defn process [] (q-to-q pt/process-tweet mq rq))
+(defn upload [] (from-q #(clutch/put-document db %) rq))
 
-(def t (Thread. #(process)))
+(defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. process))
+                                     :upload (repeat num-up (Thread. upload))})
+(def processor (Thread. #(process)))
+(def uploader (Thread. #(upload)))
 
-(defn run [t] (do
-              (.connect client)
-              (.start t)
-                t))
+(defn start-all [threads]
+	(doseq [t threads]
+		(try
+			(.start t)
+		(catch Exception e))))
 
-(defn stop [t] (twitter/stop-client client t))
+(defn run [num-proc num-up]
+           (let [threads (get-threads num-proc num-up)
+                 client (get-client mq)]
+             (do
+                (.connect client)
+		(start-all (:process threads))
+                (Thread/sleep 1000)
+		(start-all (:upload threads))
+                {:client client :threads threads})))
 
-(defn -main [] (run t))
+(defn stop [m] (let [threads (:threads m)] 
+                (do
+                  (.stop (:client m))
+                  (map #(.stop %) (:process threads))
+                  (map #(.stop %) (:upload threads)))))
+
+(defn -main [] (run 6 6))

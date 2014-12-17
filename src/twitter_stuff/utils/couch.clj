@@ -22,11 +22,13 @@
     (clutch/put-document db
      (merge (clutch/get-document db id) m)))
 
+(defn hashtag-to-db [db hashtag]
+      (let [doc (or (clutch/get-document db (:hashtag hashtag)) {:_id (:hashtag hashtag) :tweets []})]
+        (clutch/put-document db (update-in doc [:tweets] conj (:tweet hashtag)))))
+
 (defn hashtags-to-db [db hashtags]
       (doseq [hashtag hashtags] 
-        (let [doc (or (clutch/get-document db (:hashtag hashtag)) {:_id (:hashtag hashtag) :tweets []})]
-          (clutch/put-document db (update-in doc [:tweets] conj (:tweet hashtag))))))
-
+        (hashtag-to-db db hashtag)))
 
 (defn get-all-docs [db & {:keys [with-docs]}]
 	(clutch/all-documents db {:include_docs (or with-docs false)}))
