@@ -3,11 +3,13 @@
             [cemerick.url]
             [environ.core :refer [env]]))
 
-(defn get-db [] (clutch/get-database (assoc (cemerick.url/url "http://127.0.0.1/"
-						 "twitter")
-					:port 5984
-					:username "swizzard"
-					:password (env :couchdb-admin-pword))))
+(defn get-db [& [db-url db-name]] (clutch/get-database (assoc (cemerick.url/url (or db-url "http://127.0.0.1")
+						 (or db-name "twitter"))
+					:port (env :couchdb-port)
+					:username (env :couchdb-username)
+					:password (env :couchdb-admin-pword)
+                    :socket-timeout 200000
+                    :conn-timeout 20000)))
 
 (defn multi-update [old new]
   (if (nil? old)
@@ -20,29 +22,36 @@
     (clutch/put-document db
      (merge (clutch/get-document db id) m)))
 
+(defn hashtag-to-db [db hashtag]
+      (let [doc (or (clutch/get-document db (:hashtag hashtag)) {:_id (:hashtag hashtag) :tweets []})]
+        (clutch/put-document db (update-in doc [:tweets] conj (:tweet hashtag)))))
+
 (defn hashtags-to-db [db hashtags]
       (doseq [hashtag hashtags] 
-        (let [new-tweet (:tweet hashtag) ht (:hashtag hashtag) 
-	      updated (if-let [doc (clutch/get-document db ht)] 
-		(update-in doc [:tweets] conj new-tweet) 
-		{:_id ht :tweets [new-tweet]})]
-          (clutch/put-document db updated))))
-
+        (hashtag-to-db db hashtag)))
 
 (defn get-all-docs [db & {:keys [with-docs]}]
-	(clutch/all-documents db {:include_documents (or with-docs false)}))
+	(clutch/all-documents db {:include_docs (or with-docs false)}))
 
-(defn co-ocs [db ht & [s]] 
-	(reduce into (or s #{}) 
+(defn count-tweets [& [db-url db-name]] (reduce + (map #(-> % (get-in [:doc :tweets]) count) (clutch/all-documents (get-db (or db-url "127.0.0.1")
+                                                                                                                           (or db-name "twitter")) 
+                                                                                                                   {:include_docs true}))))
+
+(defn extract-tags [doc] (let [tweets (get-in doc [:doc :tweets])]
+                           (map (fn [t] (map :text #(map (get-in % [:entities :hashtags]) t))) tweets)))
+
+
+(defn co-ocs [ht & [s]] 
+	(reduce into (or s []) 
 		(map #(map :text %) 
 	      	      (map #(get-in % [:entities :hashtags]) 
-	      	    	    (:tweets (clutch/get-document db ht))))))
+	      	    	    (get-in ht [:doc :tweets])))))
 
-(defn co-occurrences [db ht depth]
-	(loop [tags (co-ocs db ht) i 1] 
+(defn co-occurrences [ht depth]
+	(loop [tags (co-ocs ht) i 1] 
 		(if (<= i depth) (recur 
 				(reduce into tags 
-					(map (partial co-ocs db) tags)) 
+					(map (partial co-ocs) tags)) 
 			    	(inc i)) 
 		tags)))
 	

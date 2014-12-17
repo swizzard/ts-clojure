@@ -26,9 +26,9 @@
   ([m k-or-ks]
    (match [(nil? m) (sequential? k-or-ks)]
      [false true]
-       (if (some? (get-in m k-or-ks)) m)
+       (if (seq (get-in m k-or-ks)) m)
      [false false]
-       (if (some? (get m k-or-ks)) m)
+       (if (seq (get m k-or-ks)) m)
      :else
        nil)))
 
@@ -37,3 +37,22 @@
 (defn has-text [m] (screen-map m :text))
 
 (defn has-tags [m] (screen-map m [:entities :hashtags]))
+
+(defn screen-tweet [t] (-> t eng-only has-text has-tags))
+
+(defn from-q [process-fn q]
+    (loop [res (.take q)]
+      (process-fn res)
+      (recur (.take q))))
+
+(defn to-q [process-fn q]
+    (fn [input]
+      (if-let [res (process-fn input)]
+        (.offer q res))))
+
+(defn q-to-q [process-fn in-q out-q]
+    (from-q (to-q process-fn out-q) in-q))
+
+(defn map-by [f coll] (reduce (partial apply assoc) {} (map f coll)))
+
+(defn sort-docs-by-tag [docs] (map-by (fn [ht] [(:key ht) (get-in ht [:doc :tweets])]) docs))

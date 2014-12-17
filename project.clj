@@ -22,4 +22,5 @@
             [lein-environ "1.0.0"]
             [lein-pprint "1.1.1"]]
   :jvm-opts ["-Xmx16g" "-Xms8g" "-server" "-Xshare:off"]
+  :repl-options {:timeout 9600000}
   :main twitter-stuff.main)
