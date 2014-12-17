@@ -1,18 +1,16 @@
 (ns twitter-stuff.main
   (:require [twitter-stuff.twitter.twitter :refer [get-client]]
-            [twitter-stuff.parsing.parse-tweet :as pt]
-            [twitter-stuff.utils.couch :refer [get-db]] 
+            [twitter-stuff.parsing.parse-tweet :refer [process-tweet]]
+	    [twitter-stuff.utils.mongo :refer [tweet-to-mongo]]
             [twitter-stuff.utils.helpers :refer [from-q q-to-q]]
-            [com.ashafa.clutch :as clutch]
             [environ.core :refer [env]]))
 
-(def db (get-db "http://127.0.0.1" "twitter-new"))
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
 (def rq (java.util.concurrent.LinkedBlockingQueue.))
+(def client (get-client mq))
 
-
-(defn process [] (q-to-q pt/process-tweet mq rq))
-(defn upload [] (from-q #(clutch/put-document db %) rq))
+(defn process [] (q-to-q process-tweet mq rq))
+(defn upload [] (from-q #(tweet-to-mongo %) rq))
 
 (defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. process))
                                      :upload (repeat num-up (Thread. upload))})
@@ -24,7 +22,6 @@
 		(try
 			(.start t)
 		(catch Exception e))))
->>>>>>> master
 
 (defn run [num-proc num-up]
            (let [threads (get-threads num-proc num-up)
