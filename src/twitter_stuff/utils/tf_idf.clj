@@ -1,11 +1,15 @@
 (ns twitter-stuff.utils.tf-idf
-  (:require [twitter-stuff.utils.couch :refer [get-db
-                                               co-occurrences
-                                               get-all-docs]]))
+	(:require (monger [collection :as mg]
+			  [operators :as mo])
+		  [twitter-stuff.utils.mongo [mongos-conn]]))
 
-(def db (get-db "http://192.168.1.2" "twitter"))
-(def terms (map :key (get-all-docs db)))
-(def docs (reduce (partial apply assoc) {} (map (memoize (fn [t] [t (co-occurrences db t 1)])) terms)))
+(def all-tweets (mg/find-maps mongos-conn "tweets"))
+
+(def all-tags (concat (map :hashtags all-tweets)))
+
+(defn count-containing-docs [t] (mg/count mongos-conn "tweets"
+				    {:hashtags {mo/$elemMatch
+						  {mo/$eq t}}}))
 
 (defn get-adjusted-freq [t d] (let [rfs (frequencies d)
                                     max-freq (second (first
@@ -17,8 +21,6 @@
                                     raw-t-f (get rfs t)]
                                 (+ 0.5 (/ (* 0.5 raw-t-f)
                                           max-freq))))
-
-(defn count-containing-docs [t] (count (map (fn [d] (if (some #{t} d) 1 0) docs))))
 
 (defn get-idf [t] (Math/log (/ (count terms) (count-containing-docs t))))
 

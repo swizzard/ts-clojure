@@ -4,8 +4,6 @@
 			  [operators :as ops]))
 	(:import org.bson.types.ObjectId))
 
-(defn get-conn [port] (mg/get-db (mg/connect {:port port}) "twitter-new"))
-
 (def mongos-conn (mg/get-db (mg/connect {:port 27017}) "twitter-new"))
 
 (def coll "tweets")

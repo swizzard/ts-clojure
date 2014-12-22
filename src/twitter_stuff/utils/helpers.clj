@@ -13,7 +13,11 @@
 
       (def m2 {:a {:b 1} :c 2})
       (screen-map m2 [:a :b] 1) --> {:a {:b 1} :c 2}
-      (screen-map m2 [:a :b] 2) --> nil"}
+      (screen-map m2 [:a :b] 2) --> nil
+
+      (def m3 {:a 1 :b 2})
+      (screen-map m :a) --> {:a 1 :b 2}
+      (screen-map :c) --> nil"}
   ([m k-or-ks v]
    (match [(nil? m) (sequential? k-or-ks)]
      [false true]
@@ -55,4 +59,3 @@
 
 (defn map-by [f coll] (reduce (partial apply assoc) {} (map f coll)))
 
-(defn sort-docs-by-tag [docs] (map-by (fn [ht] [(:key ht) (get-in ht [:doc :tweets])]) docs))
