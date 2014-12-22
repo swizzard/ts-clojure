@@ -1,21 +1,23 @@
 (ns twitter-stuff.main
   (:require [twitter-stuff.twitter.twitter :refer [get-client]]
             [twitter-stuff.parsing.parse-tweet :refer [process-tweet]]
-	    [twitter-stuff.utils.mongo :refer [tweet-to-mongo]]
+	    [twitter-stuff.utils.mongo :refer [tweet-to-mongo mongos-conn]]
             [twitter-stuff.utils.helpers :refer [from-q q-to-q]]
-            [environ.core :refer [env]]))
+            [environ.core :refer [env]]
+	    [monger.core :as mg]))
 
 (def mq (java.util.concurrent.LinkedBlockingQueue.))
 (def rq (java.util.concurrent.LinkedBlockingQueue.))
 (def client (get-client mq))
 
 (defn process [] (q-to-q process-tweet mq rq))
-(defn upload [] (from-q #(tweet-to-mongo %) rq))
+(defn upload [db] (from-q #(tweet-to-mongo db %) rq))
 
-(defn get-threads [num-proc num-up] {:process (repeat num-proc (Thread. process))
-                                     :upload (repeat num-up (Thread. upload))})
-(def processor (Thread. #(process)))
-(def uploader (Thread. #(upload)))
+(defn get-threads [num-proc num-up] 
+	{:process (repeat num-proc (Thread. process))
+         :upload (repeat 3 
+		   (Thread. 
+			#(upload mongos-conn)))}) 
 
 (defn start-all [threads]
 	(doseq [t threads]
@@ -39,4 +41,4 @@
                   (map #(.stop %) (:process threads))
                   (map #(.stop %) (:upload threads)))))
 
-(defn -main [] (run 3 6))
+(defn -main [] (run 2 3))

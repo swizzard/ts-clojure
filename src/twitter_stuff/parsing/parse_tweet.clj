@@ -13,11 +13,13 @@
 
 (defn process-tweet [tw]
   (if-let [t (-> (parse-string tw true) helpers/screen-tweet)]
+  (do (println "processing")
   (-> t
       (assoc :expanded_urls
 	     (get-expanded-urls (get-in t [:entities :urls])))
+      (assoc :hashtags (map :text (get-in tw [:entities :hashtags])))
       (merge (parse-tweet-text (:text t)))
       (merge (get-date-info (:created_at t)))
       (update-in [:user] process-user)
-      )))
+      ))))
 

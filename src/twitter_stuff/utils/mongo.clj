@@ -4,9 +4,13 @@
 			  [operators :as ops]))
 	(:import org.bson.types.ObjectId))
 
-(def conn (mg/connect))
-(def twitter-db (mg/get-db conn "twitter-new"))
+(defn get-conn [port] (mg/get-db (mg/connect {:port port}) "twitter-new"))
+
+(def mongos-conn (mg/get-db (mg/connect {:port 27017}) "twitter-new"))
+
 (def coll "tweets")
 
-(defn tweet-to-mongo [tweet]
-	(mc/insert twitter-db coll (assoc tweet :_id (ObjectId.)))) 
+(defn tweet-to-mongo [conn tweet]
+	(do (println "uploading")
+	(mc/insert conn coll (assoc tweet :_id (ObjectId.)))))
+
