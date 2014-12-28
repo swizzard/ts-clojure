@@ -59,3 +59,19 @@
 
 (defn map-by [f coll] (reduce (partial apply assoc) {} (map f coll)))
 
+(defn max-by 
+    ^{:doc "Get the 'max' entry of a dictionary, as defined by 
+      a comparator function that operates on either keys or values"}
+    [c k-or-v m]
+    (let [cmp-target (match [k-or-v]
+                            [:k] 0
+                            [:key] 0
+                            [:v] 1
+                            [:val] 1
+                            :else k-or-v)]
+        (loop [h (first m) t (next m) mx (first m)]
+            (if t (recur (first t) 
+                         (next t) 
+                         (if (c (get h cmp-target) (get mx cmp-target)) h mx))
+                mx))))
+
