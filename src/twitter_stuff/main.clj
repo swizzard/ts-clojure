@@ -41,4 +41,4 @@
                   (map #(.stop %) (:process threads))
                   (map #(.stop %) (:upload threads)))))
 
-(defn -main [] (run 2 3))
+(defn -main [] (run 1 1))
