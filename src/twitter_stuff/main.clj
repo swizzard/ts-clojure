@@ -30,9 +30,9 @@
                  client (get-client mq)]
              (do
                 (.connect client)
-		(start-all (:process threads))
-                (Thread/sleep 1000)
-		(start-all (:upload threads))
+		        (start-all (:process threads))
+                        (Thread/sleep 1000)
+		        (start-all (:upload threads))
                 {:client client :threads threads})))
 
 (defn stop [m] (let [threads (:threads m)] 
@@ -41,4 +41,13 @@
                   (map #(.stop %) (:process threads))
                   (map #(.stop %) (:upload threads)))))
 
-(defn -main [] (run 1 1))
+(defn cycle-threads [threads interval]
+    (do
+        (println "Cycling threads in " interval)
+        (Thread/sleep interval)
+        (println "Stopping threads")
+        (stop threads)
+        (println "Regenerating threads")
+        (run 1 1)))
+
+(defn -main [] (loop [ts (run 1 3)] (recur (cycle-threads ts 300000))))
