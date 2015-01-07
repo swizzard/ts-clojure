@@ -1,6 +1,8 @@
 (ns twitter-stuff.utils.analysis
 	(:require (monger [collection :as mc]
 			  [operators :as mo])
+          [flatland.ordered.set :refer [ordered-set]]
+          [clojure.core.match :refer [match]]
 		  [twitter-stuff.utils.mongo :refer [mongos-conn coll]]))
 
 (defn arith-mean [vals] (double (/ (apply + vals) (count vals))))
@@ -35,7 +37,10 @@
                divisor)))))
 
 
-(defn get-all-tags [] (reduce into #{} (map :hashtags (mc/find-maps mongos-conn coll))))
+(defn get-all-tags [] (reduce into (sorted-set)
+                        (map :hashtags 
+                            (mc/find-maps 
+                                mongos-conn coll {} ["hashtags"]))))
 
 (defn get-tweets-with-tag [tag] (mc/find-maps mongos-conn coll {:hashtags tag}))
 
@@ -50,3 +55,20 @@
 (defn transform-map [m f] (reduce (fn [m e] (assoc m (key e) (f (val e)))) {} m))
 
 (defn keys-ratio [m k1 k2] (/ (get m k1) (get m k2)))
+
+(defn nil-keys? [m] (let [nks (filter #(nil? %) (keys m))]
+                        (if (empty? nks) false true)))
+
+(defn get-all-vals [ms] (let [not-nil (fn ([a] a)
+                                          ([a b] (match [(some? a) (some? b)]
+                                                        [true true] b
+                                                        [false true] b
+                                                        [true false] a
+                                                        [false false] nil)))]
+                            (loop [cm (first ms) rms (next ms)]
+                                (if (or (not-every? some? (keys cm))
+                                        (empty? rms))
+                                    cm
+                                    (recur (merge-with not-nil cm (first rms))
+                                           (next rms))))))
+
